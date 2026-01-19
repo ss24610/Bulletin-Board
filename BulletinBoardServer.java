@@ -2,7 +2,8 @@ import java.util.*;
 
 public final class BulletinBoardServer {
 
-
+    
+    
 
     public static void main(String[] args) throws Exception {
 
@@ -87,10 +88,6 @@ public final class BulletinBoardServer {
             System.exit(1);
         }
 
-
-        
-
-        
     }
     
 }
