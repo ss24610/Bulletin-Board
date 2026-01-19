@@ -18,9 +18,12 @@ public class BulletinNote {
         this.note_status = note_status;
     }
 
-
     public boolean is_pinned() {
         return note_status;
+    }
+
+    public void pin_note() {
+        note_status = true;
     }
 
     public String get_note_color() {
