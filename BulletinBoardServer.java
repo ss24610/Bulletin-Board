@@ -1,8 +1,26 @@
+import java.net.*;
 import java.util.*;
+import java.io.*;
 
 public final class BulletinBoardServer {
 
-    
+    private final int server_port;
+    private final int board_width;
+    private final int board_height;
+    private final int note_height;
+    private final int note_width;
+    private final ArrayList<String> colours;
+    private ArrayList<BulletinNote> notes = new ArrayList<BulletinNote>();
+
+    public BulletinBoardServer (int server_port, int board_width, int board_height, int note_height, int note_width, ArrayList<String> colours, ArrayList<BulletinNote> notes) {
+        this.server_port = server_port;
+        this.board_width = board_width;
+        this.board_height = board_height;
+        this.note_height = note_height;
+        this.note_width = note_width;
+        this.colours = colours;
+        this.notes = notes;
+    }
     
 
     public static void main(String[] args) throws Exception {
@@ -23,8 +41,8 @@ public final class BulletinBoardServer {
         int board_height = 0;
         int note_height = 0;
         int note_width = 0;
-
-        ArrayList colours = new ArrayList<String>();
+        ArrayList<String> colours = new ArrayList<String>();
+        ArrayList<BulletinNote> notes = new ArrayList<BulletinNote>();
 
 
         try {
@@ -44,47 +62,61 @@ public final class BulletinBoardServer {
         }
 
         try {
-            
-            board_height = Integer.parseInt(args[1]);
-            board_width = Integer.parseInt(args[2]);
+            board_width = Integer.parseInt(args[1]);
+            board_height = Integer.parseInt(args[2]);
+            note_width = Integer.parseInt(args[3]);
+            note_height = Integer.parseInt(args[4]);
 
-            if(board_height < 0) {
-                System.err.println("Board height must be positive");
-                System.exit(1);
-
-            }
-
-            if(board_width < 0) {
-                System.err.println("Board width must be positive");
+            if(board_height < 0 || board_width < 0 || note_height < 0 || note_width < 0) {
+                System.err.println("Error: Board/note dimensions must be positive integers");
                 System.exit(1);
 
             }
 
         } catch (NumberFormatException e) {
-            System.err.println("Board dimensions must be positive integers");
+            System.err.println("Board and note dimensions must be positive integers");
+            return;
+        }
+
+        for(int i = 5; i < args.length; i++) {
+            colours.add(args[i]);
+        }
+
+        BulletinBoardServer server = new BulletinBoardServer(server_port, board_width, board_height, note_height, note_width, colours, notes);
+
+        try {
+
+            ServerSocket server_socket = new ServerSocket(server_port);
+            System.out.println("BulletinBoardServer started on port " + server_port);
+            System.out.println("Open browser: http://localhost:" + server_port);
+            System.out.println("Close server using Ctrl+C");
+            System.out.println("---------------------------------------------------");
+
+
+            while (true) {
+
+                Socket client_socket = server_socket.accept();
+
+                String client_ip = client_socket.getInetAddress().getHostAddress();
+
+                System.out.println("Client connected from: " + client_ip);
+
+                BulletinClient client = new BulletinClient(client_socket, client_ip);
+                
+                Thread thread = new Thread(client);
+
+                thread.start();
+
+            }
+
+        } catch (BindException e) {
+            System.err.println("Error: " + server_port + " is already in use.");
             System.exit(1);
         }
 
-
-        try {
-            
-            note_height = Integer.parseInt(args[1]);
-            note_width = Integer.parseInt(args[2]);
-
-            if(note_height < 0) {
-                System.err.println("Note height must be positive");
-                System.exit(1);
-
-            }
-
-            if(note_width < 0) {
-                System.err.println("Note width must be positive");
-                System.exit(1);
-
-            }
-
-        } catch (NumberFormatException e) {
-            System.err.println("Note dimensions must be positive integers");
+        catch (IOException e) {
+            // Handle I/O exceptions (connection refused, socket creation failed, etc.)
+            System.err.println("Error: unable to create server socket on port " + server_port);
             System.exit(1);
         }
 
