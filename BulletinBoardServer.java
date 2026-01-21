@@ -12,16 +12,51 @@ public final class BulletinBoardServer {
     private final ArrayList<String> colours;
     private ArrayList<BulletinNote> notes = new ArrayList<BulletinNote>();
 
-    public BulletinBoardServer (int server_port, int board_width, int board_height, int note_height, int note_width, ArrayList<String> colours, ArrayList<BulletinNote> notes) {
+    public BulletinBoardServer (int server_port, int board_width, int board_height, int note_height, int note_width, ArrayList<String> colours) {
         this.server_port = server_port;
         this.board_width = board_width;
         this.board_height = board_height;
         this.note_height = note_height;
         this.note_width = note_width;
         this.colours = colours;
-        this.notes = notes;
     }
     
+
+    public synchronized String post_note(String note_content, String note_color, int note_width, int note_height, int note_x, int note_y) {
+
+        notes.add(new BulletinNote(note_content, note_color, note_width, note_height, note_x, note_y));
+
+        return "OK: NOTE POSTED";
+
+    }
+
+
+    public synchronized String pinAt(...)
+    public synchronized String unpinAt(...)
+
+
+    public synchronized String shake() {
+
+        for(BulletinNote note: notes) {
+            if(note.is_pinned()){
+                notes.remove(note);
+            }
+        }
+
+        return "OK: BOARD SHAKED";
+
+    }
+
+    public synchronized String clear() {
+        notes.clear();
+
+        return "OK: NOTES CLEARD";
+    }
+
+
+    public synchronized List<BulletinNote> getNotes() {
+
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -82,7 +117,7 @@ public final class BulletinBoardServer {
             colours.add(args[i]);
         }
 
-        BulletinBoardServer server = new BulletinBoardServer(server_port, board_width, board_height, note_height, note_width, colours, notes);
+        BulletinBoardServer server = new BulletinBoardServer(server_port, board_width, board_height, note_height, note_width, colours);
 
         try {
 
@@ -101,7 +136,7 @@ public final class BulletinBoardServer {
 
                 System.out.println("Client connected from: " + client_ip);
 
-                BulletinClient client = new BulletinClient(client_socket, client_ip);
+                BulletinClient client = new BulletinClient(client_socket, client_ip, server);
                 
                 Thread thread = new Thread(client);
 
