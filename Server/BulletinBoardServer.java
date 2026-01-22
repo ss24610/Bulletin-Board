@@ -106,7 +106,49 @@ public final class BulletinBoardServer {
     }
 
 
-    public synchronized List<BulletinNote> getNotes() {
+    public synchronized String get_notes(String colour, int contains_x, int contains_y, String refers_to) {
+        //color=<color> contains=<x> <y> refersTo=<substring>
+
+        
+
+        if(notes.size() == 0){
+            return "ERROR NO NOTES EXIST";
+        }
+
+        else{
+
+            String response = "";
+            ArrayList<BulletinNote> filtered_notes = new ArrayList<>();
+
+            for(BulletinNote note: notes){
+        
+                int[] note_base = note.get_note_position();
+                int[] note_dimensions = note.get_note_dimensions();
+
+                boolean colour_filter = (note.get_note_colour().equals(colour) || colour.equals("ALL"));
+                boolean dimension_filter = ((contains_x >= note_base[0] && contains_x < note_base[0]+note_dimensions[0] &&
+                                            contains_y >= note_base[1] && contains_y < note_base[1]+note_dimensions[1])
+                                            || (contains_x == -1 && contains_y ==-1));
+                boolean substring_filter = ((note.get_note_content().contains(refers_to) || refers_to.equals("ALL")));
+                
+                if(colour_filter && dimension_filter && substring_filter){
+                    filtered_notes.add(note);
+                }
+
+            }
+
+            if(filtered_notes.size()==0){
+                return "ERROR NO NOTES EXIST WITH SPECIFIED FILTERS";
+            }
+            
+            response += "OK " + filtered_notes.size() + "\n";
+            for(BulletinNote note: filtered_notes){
+                response += note.display_note();
+            }
+
+            return response;
+
+        }
 
     }
 
