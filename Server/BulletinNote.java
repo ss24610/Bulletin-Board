@@ -3,16 +3,16 @@ import java.util.*;
 public class BulletinNote {
 
     private String note_content = null;
-    private String note_color = null;
+    private String note_colour = null;
     private int note_width = 0;
     private int note_height = 0;
     private int note_x = 0;
     private int note_y = 0;
     private ArrayList<BulletinPin> pins = new ArrayList<BulletinPin>();
 
-    public BulletinNote(String note_content, String note_color, int note_width, int note_height, int note_x, int note_y) {
+    public BulletinNote(String note_content, String note_colour, int note_width, int note_height, int note_x, int note_y) {
         this.note_content = note_content;
-        this.note_color = note_color;
+        this.note_colour = note_colour;
         this.note_width = note_width;
         this.note_height = note_height;
         this.note_x = note_x;
@@ -27,8 +27,8 @@ public class BulletinNote {
         return pins;
     }
 
-    public String get_note_color() {
-        return note_color;
+    public String get_note_colour() {
+        return note_colour;
     }
 
     public int[] get_note_position() {
@@ -41,6 +41,10 @@ public class BulletinNote {
 
     public String get_note_content() {
         return note_content;
+    }
+
+    public String display_note() {
+        return "NOTE " + this.note_x + " " + this.note_y + " " + this.note_colour + " " + this.note_content + "\n";
     }
 
     public boolean contains_pin(BulletinPin pin){

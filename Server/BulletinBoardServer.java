@@ -11,7 +11,6 @@ public final class BulletinBoardServer {
     private final int note_width;
     private final ArrayList<String> colours;
     private ArrayList<BulletinNote> notes = new ArrayList<BulletinNote>();
-    private ArrayList<BulletinPin> pins = new ArrayList<BulletinPin>();
 
     public BulletinBoardServer (int server_port, int board_width, int board_height, int note_height, int note_width, ArrayList<String> colours) {
         this.server_port = server_port;
@@ -37,7 +36,7 @@ public final class BulletinBoardServer {
         BulletinPin new_pin = new BulletinPin(x,y);
 
         //iterate over notes to determine which notes can contain the Pin
-        List<BulletinNote> affected_notes = new ArrayList<>();
+        ArrayList<BulletinNote> affected_notes = new ArrayList<>();
         for (BulletinNote note : notes) {
             if (note.valid_pin(new_pin)) {
                 affected_notes.add(note);
@@ -107,25 +106,76 @@ public final class BulletinBoardServer {
     }
 
 
-    public synchronized List<BulletinNote> getNotes() {
+    public synchronized String get_notes(String colour, int contains_x, int contains_y, String refers_to) {
+        //color=<color> contains=<x> <y> refersTo=<substring>
+
+        
+
+        if(notes.size() == 0){
+            return "ERROR NO NOTES EXIST";
+        }
+
+        else{
+
+            String response = "";
+            ArrayList<BulletinNote> filtered_notes = new ArrayList<>();
+
+            for(BulletinNote note: notes){
+        
+                int[] note_base = note.get_note_position();
+                int[] note_dimensions = note.get_note_dimensions();
+
+                boolean colour_filter = (note.get_note_colour().equals(colour) || colour.equals("ALL"));
+                boolean dimension_filter = ((contains_x >= note_base[0] && contains_x < note_base[0]+note_dimensions[0] &&
+                                            contains_y >= note_base[1] && contains_y < note_base[1]+note_dimensions[1])
+                                            || (contains_x == -1 && contains_y ==-1));
+                boolean substring_filter = ((note.get_note_content().contains(refers_to) || refers_to.equals("ALL")));
+                
+                if(colour_filter && dimension_filter && substring_filter){
+                    filtered_notes.add(note);
+                }
+
+            }
+
+            if(filtered_notes.size()==0){
+                return "ERROR NO NOTES EXIST WITH SPECIFIED FILTERS";
+            }
+            
+            response += "OK " + filtered_notes.size() + "\n";
+            for(BulletinNote note: filtered_notes){
+                response += note.display_note();
+            }
+
+            return response;
+
+        }
 
     }
 
     public synchronized String get_pins() {
 
-        if(pins.size() ==0){
-            return "ERROR No Pins Exist";
+        String response = "OK ";
+        ArrayList<BulletinPin> placed_pins = new ArrayList<>();
+
+        for(BulletinNote note: notes){
+            for(BulletinPin pin: note.get_pins()){
+                if(!placed_pins.contains(pin)){
+                    placed_pins.add(pin);
+                }
+            }
         }
 
-        String response = "OK " + pins.size();
-
-        for(BulletinPin pin: pins){
-            response += "\n" + pin.display_pin();
+        if(notes.size()==0){
+            return "ERROR NO PINS EXIST";
         }
 
+        response += placed_pins.size() + "\n";
+
+        for(BulletinPin pin: placed_pins){
+            response += pin.display_pin();
+        }
 
         return response;
-
 
     }
 
