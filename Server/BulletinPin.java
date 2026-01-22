@@ -18,7 +18,7 @@ public class BulletinPin {
     }
 
     public String display_pin() {
-        return "PIN " + pin_x + " " + pin_y + "";
+        return "PIN " + pin_x + " " + pin_y + "\n";
     }
 
     @Override

@@ -11,7 +11,6 @@ public final class BulletinBoardServer {
     private final int note_width;
     private final ArrayList<String> colours;
     private ArrayList<BulletinNote> notes = new ArrayList<BulletinNote>();
-    private ArrayList<BulletinPin> pins = new ArrayList<BulletinPin>();
 
     public BulletinBoardServer (int server_port, int board_width, int board_height, int note_height, int note_width, ArrayList<String> colours) {
         this.server_port = server_port;
@@ -37,7 +36,7 @@ public final class BulletinBoardServer {
         BulletinPin new_pin = new BulletinPin(x,y);
 
         //iterate over notes to determine which notes can contain the Pin
-        List<BulletinNote> affected_notes = new ArrayList<>();
+        ArrayList<BulletinNote> affected_notes = new ArrayList<>();
         for (BulletinNote note : notes) {
             if (note.valid_pin(new_pin)) {
                 affected_notes.add(note);
@@ -113,19 +112,28 @@ public final class BulletinBoardServer {
 
     public synchronized String get_pins() {
 
-        if(pins.size() ==0){
-            return "ERROR No Pins Exist";
+        String response = "OK ";
+        ArrayList<BulletinPin> placed_pins = new ArrayList<>();
+
+        for(BulletinNote note: notes){
+            for(BulletinPin pin: note.get_pins()){
+                if(!placed_pins.contains(pin)){
+                    placed_pins.add(pin);
+                }
+            }
         }
 
-        String response = "OK " + pins.size();
-
-        for(BulletinPin pin: pins){
-            response += "\n" + pin.display_pin();
+        if(notes.size()==0){
+            return "ERROR NO PINS EXIST";
         }
 
+        response += placed_pins.size() + "\n";
+
+        for(BulletinPin pin: placed_pins){
+            response += pin.display_pin();
+        }
 
         return response;
-
 
     }
 
