@@ -11,6 +11,7 @@ public final class BulletinBoardServer {
     private final int note_width;
     private final ArrayList<String> colours;
     private ArrayList<BulletinNote> notes = new ArrayList<BulletinNote>();
+    private ArrayList<BulletinPin> pins = new ArrayList<BulletinPin>();
 
     public BulletinBoardServer (int server_port, int board_width, int board_height, int note_height, int note_width, ArrayList<String> colours) {
         this.server_port = server_port;
@@ -31,8 +32,60 @@ public final class BulletinBoardServer {
     }
 
 
-    public synchronized String pinAt(...)
-    public synchronized String unpinAt(...)
+    public synchronized String place_pin(int x, int y) {
+
+        BulletinPin new_pin = new BulletinPin(x,y);
+
+        //iterate over notes to determine which notes can contain the Pin
+        List<BulletinNote> affected_notes = new ArrayList<>();
+        for (BulletinNote note : notes) {
+            if (note.valid_pin(new_pin)) {
+                affected_notes.add(note);
+            }
+        }
+
+        // if no note are affected, the pin missed therefore error
+        if(affected_notes.size() ==0){
+            return "ERROR PIN_MISS No note contains the given coordinates";
+        }
+
+        // for all the affected notes, check to see if any note already has that pin
+        // duplicate pin error
+        for (BulletinNote note: affected_notes){
+            if(note.contains_pin(new_pin)){
+                return "ERROR PIN ALREADY EXISTS";
+            }
+        }
+
+        // if passed the previous checks, pin can be placed over all affected notes
+        for (BulletinNote note: affected_notes){
+            note.place_pin(new_pin);
+        }
+
+        return "OK PIN PLACED";
+
+    }
+
+    public synchronized String remove_pin(int x, int y) {
+
+        boolean pin_missed = true;
+        BulletinPin pin = new BulletinPin(x, y);
+
+        for(BulletinNote note: notes){
+            if(note.contains_pin(pin)){
+                pin_missed = false;
+                note.remove_pin(pin);
+            }
+        }
+
+        if(pin_missed){
+            return "ERROR PIN_NOT_FOUND No pin exists at the given coordinates";
+        }
+        else{
+            return "OK: REMOVED PIN";
+        }
+
+    }
 
 
     public synchronized String shake() {
@@ -43,7 +96,7 @@ public final class BulletinBoardServer {
             }
         }
 
-        return "OK: BOARD SHAKED";
+        return "OK SHAKE_COMPLETE";
 
     }
 
@@ -55,6 +108,24 @@ public final class BulletinBoardServer {
 
 
     public synchronized List<BulletinNote> getNotes() {
+
+    }
+
+    public synchronized String get_pins() {
+
+        if(pins.size() ==0){
+            return "ERROR No Pins Exist";
+        }
+
+        String response = "OK " + pins.size();
+
+        for(BulletinPin pin: pins){
+            response += "\n" + pin.display_pin();
+        }
+
+
+        return response;
+
 
     }
 
@@ -77,8 +148,6 @@ public final class BulletinBoardServer {
         int note_height = 0;
         int note_width = 0;
         ArrayList<String> colours = new ArrayList<String>();
-        ArrayList<BulletinNote> notes = new ArrayList<BulletinNote>();
-
 
         try {
             
@@ -118,10 +187,10 @@ public final class BulletinBoardServer {
         }
 
         BulletinBoardServer server = new BulletinBoardServer(server_port, board_width, board_height, note_height, note_width, colours);
-
+        ServerSocket server_socket = null;
         try {
 
-            ServerSocket server_socket = new ServerSocket(server_port);
+            server_socket = new ServerSocket(server_port);
             System.out.println("BulletinBoardServer started on port " + server_port);
             System.out.println("Open browser: http://localhost:" + server_port);
             System.out.println("Close server using Ctrl+C");
@@ -153,6 +222,10 @@ public final class BulletinBoardServer {
             // Handle I/O exceptions (connection refused, socket creation failed, etc.)
             System.err.println("Error: unable to create server socket on port " + server_port);
             System.exit(1);
+        }
+
+        finally{
+            if(server_socket!=null) server_socket.close();
         }
 
     }

@@ -18,6 +18,15 @@ public class BulletinPin {
     }
 
     public String display_pin() {
-        return "(" + pin_x + ", " + pin_y + ")";
+        return "PIN " + pin_x + " " + pin_y + "";
     }
+
+    @Override
+    public boolean equals(Object other_pin) {
+        if (this == other_pin) return true;
+        if (other_pin == null || getClass() != other_pin.getClass()) return false;
+        BulletinPin pin = (BulletinPin) other_pin;
+        return this.pin_x == pin.pin_x && this.pin_y == pin.pin_y;
+    }
+
 }
