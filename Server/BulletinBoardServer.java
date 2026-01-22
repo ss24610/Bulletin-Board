@@ -89,11 +89,16 @@ public final class BulletinBoardServer {
 
     public synchronized String shake() {
 
+        ArrayList<BulletinNote> unpinned_notes = new ArrayList<>();
+
+
         for(BulletinNote note: notes) {
-            if(note.is_pinned()){
-                notes.remove(note);
+            if(!note.is_pinned()){
+                unpinned_notes.add(note);
             }
         }
+
+        notes.removeAll(unpinned_notes);
 
         return "OK SHAKE_COMPLETE";
 
@@ -108,8 +113,6 @@ public final class BulletinBoardServer {
 
     public synchronized String get_notes(String colour, int contains_x, int contains_y, String refers_to) {
         //color=<color> contains=<x> <y> refersTo=<substring>
-
-        
 
         if(notes.size() == 0){
             return "ERROR NO NOTES EXIST";
