@@ -1,5 +1,3 @@
-package Server;
-import Client.*;
 
 import java.net.*;
 import java.util.*;
@@ -29,7 +27,7 @@ public final class BulletinBoardServer {
 
         notes.add(new BulletinNote(note_content, note_color, note_width, note_height, note_x, note_y));
 
-        return "OK: NOTE POSTED";
+        return "OK NOTE POSTED";
 
     }
 
@@ -84,7 +82,7 @@ public final class BulletinBoardServer {
             return "ERROR PIN_NOT_FOUND No pin exists at the given coordinates";
         }
         else{
-            return "OK: REMOVED PIN";
+            return "OK REMOVED PIN";
         }
 
     }
@@ -185,6 +183,33 @@ public final class BulletinBoardServer {
 
     }
 
+    public synchronized int[] get_board_dimensions(){
+        return new int[] {board_width, board_height}; 
+    }
+
+    public synchronized int[] get_note_dimensions(){
+        return new int[] {note_width, note_height}; 
+    }
+
+    public synchronized ArrayList<String> get_colours() {
+        return colours;
+    }
+
+    public synchronized String get_initial_message() {
+
+        
+        String s = "";
+        System.err.println("Usage: <port> <board_width> <board_height> <note_width> <note_height> <color1> ... <colorN>");
+
+        s += this.board_width + " " + this.board_height + " " + this.note_width + " " + this.note_height;
+
+        for(String colour: this.colours) {
+            s += " " + colour;
+        }
+
+        return s;
+    }
+
     public static void main(String[] args) throws Exception {
 
         /* should we use a default port instead of terminating on invalid port? */
@@ -239,7 +264,7 @@ public final class BulletinBoardServer {
         }
 
         for(int i = 5; i < args.length; i++) {
-            colours.add(args[i]);
+            colours.add(args[i].toLowerCase());
         }
 
         BulletinBoardServer server = new BulletinBoardServer(server_port, board_width, board_height, note_height, note_width, colours);

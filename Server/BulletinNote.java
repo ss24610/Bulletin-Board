@@ -1,4 +1,3 @@
-package Server;
 import java.util.*;
 
 public class BulletinNote {
@@ -45,7 +44,7 @@ public class BulletinNote {
     }
 
     public String display_note() {
-        return "NOTE " + this.note_x + " " + this.note_y + " " + this.note_colour + " " + this.note_content + "\n";
+        return "NOTE " + this.note_x + " " + this.note_y + " " + this.note_colour + " " + this.note_content + "PINNED: "+ this.is_pinned()"\n";
     }
 
     public boolean contains_pin(BulletinPin pin){
