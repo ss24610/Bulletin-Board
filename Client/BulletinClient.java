@@ -1,3 +1,6 @@
+package Client;
+import Server.*;
+
 import java.io.*;
 import java.net.*;
 
@@ -45,9 +48,13 @@ public class BulletinClient implements Runnable {
                 
                 String response = protocol.handle_request(request_line, bulletin_server);
 
+                out.println(response);
+
                 if(response.equals("DISCONNECT")) {
                     break;
                 }
+
+                
 
 
             }

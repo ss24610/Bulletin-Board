@@ -1,3 +1,6 @@
+package Server;
+import Client.*;
+
 import java.net.*;
 import java.util.*;
 import java.io.*;
@@ -258,9 +261,9 @@ public final class BulletinBoardServer {
 
                 System.out.println("Client connected from: " + client_ip);
 
-                BulletinClient client = new BulletinClient(client_socket, client_ip, server);
+                BulletinClient client_connection = new BulletinClient(client_socket, client_ip, server);
                 
-                Thread thread = new Thread(client);
+                Thread thread = new Thread(client_connection);
 
                 thread.start();
 
