@@ -1,92 +1,101 @@
-package Client;
-import Server.*;
 
-import java.io.*;
 import java.net.*;
+import java.util.*;
+import java.io.*;
 
+public class BulletinClient {
 
-public class BulletinClient implements Runnable {
+    private static final String DEFAULT_HOST = "localhost";
+    private static final int DEFAULT_PORT = 4444;
 
-    private Socket client_socket = null;
-    private String client_IP = null;
-    private BulletinBoardServer bulletin_server = null;
+    public static void main(String[] args) throws Exception {
+        
 
-    public BulletinClient(Socket client_socket, String client_IP, BulletinBoardServer bulletin_server) {
-        this.client_socket = client_socket;
-        this.client_IP = client_IP;
-        this.bulletin_server = bulletin_server;
-    }
-
-
-    @Override
-    public void run() {
-        // TODO: Implement client logic
-        try {
-            process_request();
+        // Parse command-line arguments for host and port
+        String host = DEFAULT_HOST;
+        int port = DEFAULT_PORT;
+        
+        if (args.length > 0) {
+            host = args[0];
         }
-        catch(Exception e) {
-            System.err.println("[" + client_IP + "] Error processing request: " + e.getMessage());
+        if (args.length > 1) {
+            try {
+                port = Integer.parseInt(args[1]);
+                if (port < 1024 || port > 65535) {
+                    System.err.println("Error: Port must be between 1024 and 65535. Using default port " + DEFAULT_PORT);
+                    port = DEFAULT_PORT;
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Error: Invalid port number '" + args[1] + "'. Using default port " + DEFAULT_PORT);
+                port = DEFAULT_PORT;
+            }
         }
 
-    }
-
-    public void process_request() {
-
+        Socket client_socket = null;
         PrintWriter out = null;
         BufferedReader in = null;
 
-        try {
+        try{
 
+            client_socket = new Socket(host, port);
             out = new PrintWriter(client_socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
 
-            BulletinProtocol protocol = new BulletinProtocol();
-            String request_line;
+            // stdin is just for testing stuff
+            BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+            String initial_message = in.readLine();
 
+            // so that client can parse the server data
+            System.out.println(initial_message);
 
-            while((request_line = in.readLine()) != null) {
-                
-                String response = protocol.handle_request(request_line, bulletin_server);
+            //System.out.println(in.readLine());
+            String userInput;
 
-                out.println(response);
+            while (true) {
+                System.out.print("> ");
+                userInput = stdin.readLine();
+        
+                if (userInput == null) break;
 
-                if(response.equals("DISCONNECT")) {
+                // optional quit
+                if (userInput.equalsIgnoreCase("quit") ||
+                    userInput.equalsIgnoreCase("disconnect")) {
                     break;
                 }
-
+        
+                // send to server
+                out.println(userInput);
+        
+                // read response
+                String serverLine = in.readLine();
+                if (serverLine == null) break;
+        
+                System.out.println("SERVER: " + serverLine);
+        
                 
-
-
             }
 
-
-
-
         }
-        
+
+        catch(UnknownHostException e){
+            System.err.println("ERROR IP address of host could not be determined.");
+        }
+
         catch(IOException e) {
-            System.err.println("Error creating output and input streams for client.");
+            System.err.println("ERROR creating output and input streams for client socket.");
         }
 
         finally {
-
             try {
                 if (out != null) out.close();
                 if (in != null) in.close();
                 if (client_socket != null) client_socket.close();
             }
             catch(IOException e){
-                System.err.println("Error closing connection: " + e.getMessage());
+                System.err.println("Error closing client side connection: " + e.getMessage());
             }
-
         }
 
-
     }
-
-
-    
-
-
 
 }

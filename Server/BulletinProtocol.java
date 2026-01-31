@@ -16,7 +16,7 @@ public class BulletinProtocol {
         if (tokens[0].equalsIgnoreCase("post")){
 
             if(tokens.length < 5){
-                return "ERROR INVALID_FORMAT POST requires coordinates, color, and message";
+                return "ERROR INVALID FORMAT POST REQUIRES COORDINATES, COLOUR, AND MESSAGE";
             }
             
 
@@ -45,16 +45,16 @@ public class BulletinProtocol {
                 String color = tokens[3];
 
                 if(!server.get_colours().contains(color)){
-                    return "ERROR COLOR NOT SUPPORTED " + color + " IS NOT A VALID COLOR";
+                    return "ERROR COLOUR NOT SUPPORTED " + color + " IS NOT A VALID COLOR";
                 }
 
                 String content = request_line.substring(request_line.indexOf(color) + color.length() + 1);
                 
-                return server.post_note(content, color, note_width, note_height, x, y);
+                return server.post_note(content, color, x, y);
             }
 
             catch (NumberFormatException e) {
-                return "ERROR PIN coordinate must be positive integers and must supply x and y coordinates";
+                return "ERROR NOTE COORDINATES MUST BE POSITIVE INTEGERS WITHIN BOARD BOUNDARIES";
             }
 
         }
@@ -74,26 +74,33 @@ public class BulletinProtocol {
                 int contains_y = -1;
 
                 //color=<color> contains=<x> <y> refersTo=<substring>
-                for(int i = 1; i < tokens.length; i++){
+                try{
 
-                    if(tokens[i].startsWith("color=")){
-                        color = tokens[i].substring(6);
+                
+                    for(int i = 1; i < tokens.length; i++){
+
+                        if(tokens[i].startsWith("color=")){
+                            color = tokens[i].substring(6);
+                        }
+
+                        else if(tokens[i].startsWith("contains=")){
+                            contains_x = Integer.parseInt(tokens[i].substring(9));
+                            contains_y = Integer.parseInt(tokens[i+1]);
+                            i++;
+
+                        }
+                        else if(tokens[i].startsWith("refersTo=")){
+                            refers_to = request_line.substring(request_line.indexOf("refersTo=") + 9);
+                        }
+
                     }
 
-                    else if(tokens[i].startsWith("contains=")){
-                        contains_x = Integer.parseInt(tokens[i].substring(9));
-                        contains_y = Integer.parseInt(tokens[i+1]);
-                        i++;
-
-                    }
-                    else if(tokens[i].startsWith("refersTo=")){
-                        refers_to = request_line.substring(request_line.indexOf("refersTo=") + 9);
-                    }
-
+                    return server.get_notes(color, contains_x, contains_y, refers_to);
                 }
 
-                return server.get_notes(color, contains_x, contains_y, refers_to);
-
+                catch(NumberFormatException e){
+                    return "ERROR COORDINATES MUST BE SUPPLIED AS POSITIVE INTEGERS";
+                }
 
             }
             
@@ -109,7 +116,7 @@ public class BulletinProtocol {
 
         else if  (tokens[0].equalsIgnoreCase("pin")) {
 
-            if(tokens.length < 3){
+            if(tokens.length != 3){
                 return "ERROR INVALID FORMAT PIN REQUIRES X AND Y COORDINATES";
             }
             
@@ -146,7 +153,7 @@ public class BulletinProtocol {
 
         else if (tokens[0].equalsIgnoreCase("unpin")) {
 
-            if(tokens.length < 3){
+            if(tokens.length != 3){
                 return "ERROR INVALID FORMAT UNPIN REQUIRES X AND Y COORDINATES";
             }
             
@@ -162,7 +169,7 @@ public class BulletinProtocol {
                 int board_y = board_dimensions[1];
 
                 if(y < 0 || x < 0) {
-                    return "ERROR INVALID FORMAT PIN COORDINATES MUST BE POSITIVE";
+                    return "ERROR INVALID FORMAT UNPIN COORDINATES MUST BE POSITIVE";
     
                 }
 
@@ -175,7 +182,7 @@ public class BulletinProtocol {
             }
 
             catch (NumberFormatException e) {
-                return "ERROR INVALID FORMAT UNPIN COORDINATES MUST BE SUPPLIED AS POSITIVE INTEGER";
+                return "ERROR UNPIN COORDINATES MUST BE SUPPLIED AS POSITIVE INTEGER";
             }
             
 

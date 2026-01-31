@@ -14,3 +14,11 @@ Hello this is a test
     - may be more methods i forgot
     - also need to send the client the board/server data when it connects
 - bug fixes and other efficiency tweaks as we go along
+
+- protocol methods:
+POST 2 3 white Meeting next Wednesday from 2 to 3 
+PIN 15 12  
+UNPIN 15 12 
+SHAKE 
+GET PINS 
+CLEAR

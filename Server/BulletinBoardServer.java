@@ -23,9 +23,24 @@ public final class BulletinBoardServer {
     }
     
 
-    public synchronized String post_note(String note_content, String note_color, int note_width, int note_height, int note_x, int note_y) {
+    public synchronized String post_note(String note_content, String note_color, int note_x, int note_y) {
 
-        notes.add(new BulletinNote(note_content, note_color, note_width, note_height, note_x, note_y));
+        // method is not actually written
+        for(BulletinNote note: notes){
+            
+            int[] current_note_position = note.get_note_position();
+            int current_note_x = current_note_position[0];
+            int current_note_y = current_note_position[1];
+
+            if(current_note_x == note_x && current_note_y == note_y) {
+                return "ERROR COMPLETE OVERLAP";
+            }
+
+        }
+
+        BulletinNote new_note = new BulletinNote(note_content, note_color, note_x, note_y);
+
+        notes.add(new_note);
 
         return "OK NOTE POSTED";
 
@@ -46,7 +61,7 @@ public final class BulletinBoardServer {
 
         // if no note are affected, the pin missed therefore error
         if(affected_notes.size() ==0){
-            return "ERROR PIN_MISS No note contains the given coordinates";
+            return "ERROR PIN MISS NO NOTE WITHIN GIVEN COORDINATES";
         }
 
         // for all the affected notes, check to see if any note already has that pin
@@ -79,7 +94,7 @@ public final class BulletinBoardServer {
         }
 
         if(pin_missed){
-            return "ERROR PIN_NOT_FOUND No pin exists at the given coordinates";
+            return "ERROR PIN NOT FOUND NO PIN EXISTS AT GIVEN COORDINATES";
         }
         else{
             return "OK REMOVED PIN";
@@ -101,14 +116,14 @@ public final class BulletinBoardServer {
 
         notes.removeAll(unpinned_notes);
 
-        return "OK SHAKE_COMPLETE";
+        return "OK SHAKE COMPLETE";
 
     }
 
     public synchronized String clear() {
         notes.clear();
 
-        return "OK: NOTES CLEARD";
+        return "OK NOTES CLEARED";
     }
 
 
@@ -127,11 +142,10 @@ public final class BulletinBoardServer {
             for(BulletinNote note: notes){
         
                 int[] note_base = note.get_note_position();
-                int[] note_dimensions = note.get_note_dimensions();
 
                 boolean colour_filter = (note.get_note_colour().equals(colour) || colour.equals("ALL"));
-                boolean dimension_filter = ((contains_x >= note_base[0] && contains_x < note_base[0]+note_dimensions[0] &&
-                                            contains_y >= note_base[1] && contains_y < note_base[1]+note_dimensions[1])
+                boolean dimension_filter = ((contains_x >= note_base[0] && contains_x < note_base[0]+note_width &&
+                                            contains_y >= note_base[1] && contains_y < note_base[1]+note_height)
                                             || (contains_x == -1 && contains_y ==-1));
                 boolean substring_filter = ((note.get_note_content().contains(refers_to) || refers_to.equals("ALL")));
                 
@@ -158,6 +172,10 @@ public final class BulletinBoardServer {
 
     public synchronized String get_pins() {
 
+        if(notes.size()==0){
+            return "ERROR NO NOTES EXIST";
+        }
+
         String response = "OK ";
         ArrayList<BulletinPin> placed_pins = new ArrayList<>();
 
@@ -169,7 +187,7 @@ public final class BulletinBoardServer {
             }
         }
 
-        if(notes.size()==0){
+        if(placed_pins.size()==0){
             return "ERROR NO PINS EXIST";
         }
 
@@ -213,10 +231,10 @@ public final class BulletinBoardServer {
     public static void main(String[] args) throws Exception {
 
         /* should we use a default port instead of terminating on invalid port? */
-        int DEFAULT_PORT = 4444;
-
         if (args.length < 6) {
 
+            
+            System.err.println("ERROR INSUFFICIENT ARGUMENTS");
             System.err.println("Usage: <port> <board_width> <board_height> <note_width> <note_height> <color1> ... <colorN>");
             System.err.println("Example: 4444 10 10 2 2 blue");
             System.exit(1);
@@ -272,8 +290,7 @@ public final class BulletinBoardServer {
         try {
 
             server_socket = new ServerSocket(server_port);
-            System.out.println("BulletinBoardServer started on port " + server_port);
-            System.out.println("Open browser: http://localhost:" + server_port);
+            System.out.println("BulletinBoardServer started on localhost and port: " + server_port);
             System.out.println("Close server using Ctrl+C");
             System.out.println("---------------------------------------------------");
 
@@ -286,7 +303,7 @@ public final class BulletinBoardServer {
 
                 System.out.println("Client connected from: " + client_ip);
 
-                BulletinClient client_connection = new BulletinClient(client_socket, client_ip, server);
+                BulletinClientHandler client_connection = new BulletinClientHandler(client_socket, client_ip, server);
                 
                 Thread thread = new Thread(client_connection);
 

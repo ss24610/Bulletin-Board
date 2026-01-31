@@ -2,13 +2,13 @@ import java.io.*;
 import java.net.*;
 
 
-public class BulletinClient implements Runnable {
+public class BulletinClientHandler implements Runnable {
 
     private Socket client_socket = null;
     private String client_IP = null;
     private BulletinBoardServer bulletin_server = null;
 
-    public BulletinClient(Socket client_socket, String client_IP, BulletinBoardServer bulletin_server) {
+    public BulletinClientHandler(Socket client_socket, String client_IP, BulletinBoardServer bulletin_server) {
         this.client_socket = client_socket;
         this.client_IP = client_IP;
         this.bulletin_server = bulletin_server;
@@ -22,7 +22,7 @@ public class BulletinClient implements Runnable {
             process_request();
         }
         catch(Exception e) {
-            System.err.println("[" + client_IP + "] Error processing request: " + e.getMessage());
+            System.err.println("ERROR PROCESSING CLIENT [" + client_IP + "]: " + e.getMessage());
         }
 
     }
@@ -52,18 +52,12 @@ public class BulletinClient implements Runnable {
                     break;
                 }
 
-                
-
-
             }
-
-
-
 
         }
         
         catch(IOException e) {
-            System.err.println("Error creating output and input streams for server client handler.");
+            System.err.println("ERROR: " e.getMessage());
         }
 
         finally {
@@ -79,12 +73,6 @@ public class BulletinClient implements Runnable {
 
         }
 
-
     }
-
-
-    
-
-
 
 }

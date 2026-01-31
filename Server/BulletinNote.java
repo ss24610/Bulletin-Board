@@ -10,11 +10,9 @@ public class BulletinNote {
     private int note_y = 0;
     private ArrayList<BulletinPin> pins = new ArrayList<BulletinPin>();
 
-    public BulletinNote(String note_content, String note_colour, int note_width, int note_height, int note_x, int note_y) {
+    public BulletinNote(String note_content, String note_colour, int note_x, int note_y) {
         this.note_content = note_content;
         this.note_colour = note_colour;
-        this.note_width = note_width;
-        this.note_height = note_height;
         this.note_x = note_x;
         this.note_y = note_y;
     }
@@ -35,16 +33,12 @@ public class BulletinNote {
         return new int[] {note_x, note_y};
     }
 
-    public int[] get_note_dimensions() {
-        return new int[] {note_width, note_height};
-    }
-
     public String get_note_content() {
         return note_content;
     }
 
     public String display_note() {
-        return "NOTE " + this.note_x + " " + this.note_y + " " + this.note_colour + " " + this.note_content + "PINNED: "+ this.is_pinned()"\n";
+        return "NOTE " + this.note_x + " " + this.note_y + " " + this.note_colour + " " + this.note_content + " PINNED: "+ this.is_pinned() + "\n";
     }
 
     public boolean contains_pin(BulletinPin pin){
