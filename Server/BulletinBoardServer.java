@@ -54,7 +54,13 @@ public final class BulletinBoardServer {
         //iterate over notes to determine which notes can contain the Pin
         ArrayList<BulletinNote> affected_notes = new ArrayList<>();
         for (BulletinNote note : notes) {
-            if (note.valid_pin(new_pin)) {
+            int[] note_dimensions = note.get_note_position();
+            int note_x = note_dimensions[0];
+            int note_y = note_dimensions[1];
+
+            boolean valid_pin = (x >= note_x && x < note_x+note_width) && (y >= note_y && y <= note_y+note_height);
+
+            if (valid_pin) {
                 affected_notes.add(note);
             }
         }

@@ -4,8 +4,6 @@ public class BulletinNote {
 
     private String note_content = null;
     private String note_colour = null;
-    private int note_width = 0;
-    private int note_height = 0;
     private int note_x = 0;
     private int note_y = 0;
     private ArrayList<BulletinPin> pins = new ArrayList<BulletinPin>();
@@ -45,14 +43,6 @@ public class BulletinNote {
         return pins.contains(pin);
     }
 
-    public boolean valid_pin(BulletinPin pin){
-
-        int px = pin.get_pin_x();
-        int py = pin.get_pin_y();
-
-        return px >= note_x && px < note_x + note_width && py >= note_y && py < note_y + note_height;
-
-    }
 
     public void place_pin(BulletinPin pin){
 

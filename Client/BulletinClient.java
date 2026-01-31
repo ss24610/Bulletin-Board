@@ -69,10 +69,24 @@ public class BulletinClient {
                 // read response
                 String serverLine = in.readLine();
                 if (serverLine == null) break;
-        
-                System.out.println("SERVER: " + serverLine);
-        
-                
+                String[] parsed_line = serverLine.split(" ");  
+
+                if(serverLine.startsWith("OK ") && parsed_line.length==2){
+                    String output = "SERVER: " + serverLine + "\n";
+                    int line_number = Integer.parseInt(parsed_line[1]); 
+
+                    for(int i=0; i < line_number; i++){
+                        output += in.readLine() + "\n";
+                    }
+                    in.readLine();
+                    System.out.print(output);
+
+                    
+                }
+                else{
+                    System.out.println("SERVER: " + serverLine);
+                }
+
             }
 
         }

@@ -57,7 +57,7 @@ public class BulletinClientHandler implements Runnable {
         }
         
         catch(IOException e) {
-            System.err.println("ERROR: " e.getMessage());
+            System.err.println("ERROR: " + e.getMessage());
         }
 
         finally {
