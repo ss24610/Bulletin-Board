@@ -7,7 +7,7 @@ public class BulletinGUI {
 
     private JFrame frame;
     private JTextField hostField, portField;
-    private JButton connectButton, disconnectButton;
+    private JButton connectButton, disconnectButton, shakeButton, clearButton;
 
     private JTextArea outputArea;
     private JTextField commandField;
@@ -37,7 +37,11 @@ public class BulletinGUI {
 
         connectButton = new JButton("Connect");
         disconnectButton = new JButton("Disconnect");
+        shakeButton = new JButton("Shake");
+        clearButton = new JButton("Clear");
         disconnectButton.setEnabled(false);
+        clearButton.setEnabled(false);
+        shakeButton.setEnabled(false);
 
         topPanel.add(new JLabel("Host:"));
         topPanel.add(hostField);
@@ -45,6 +49,8 @@ public class BulletinGUI {
         topPanel.add(portField);
         topPanel.add(connectButton);
         topPanel.add(disconnectButton);
+        topPanel.add(shakeButton);
+        topPanel.add(clearButton);
 
         // === Output Area ===
         outputArea = new JTextArea();
@@ -67,6 +73,8 @@ public class BulletinGUI {
         // === Event Handlers ===
         connectButton.addActionListener(e -> connect());
         disconnectButton.addActionListener(e -> disconnect());
+        shakeButton.addActionListener(e -> sendCommand("SHAKE"));
+        clearButton.addActionListener(e -> sendCommand("CLEAR"));
         sendButton.addActionListener(e -> sendCommand());
         commandField.addActionListener(e -> sendCommand());
 
@@ -88,6 +96,8 @@ public class BulletinGUI {
 
             connectButton.setEnabled(false);
             disconnectButton.setEnabled(true);
+            shakeButton.setEnabled(true);
+            clearButton.setEnabled(true);
             sendButton.setEnabled(true);
 
         }
@@ -161,6 +171,8 @@ public class BulletinGUI {
         client = null;
         connectButton.setEnabled(true);
         disconnectButton.setEnabled(false);
+        shakeButton.setEnabled(false);
+        clearButton.setEnabled(false);
         sendButton.setEnabled(false);
         
     }
