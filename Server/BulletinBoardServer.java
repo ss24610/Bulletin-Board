@@ -25,7 +25,6 @@ public final class BulletinBoardServer {
 
     public synchronized String post_note(String note_content, String note_color, int note_x, int note_y) {
 
-        // method is not actually written
         for(BulletinNote note: notes){
             
             int[] current_note_position = note.get_note_position();

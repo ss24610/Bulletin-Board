@@ -19,7 +19,6 @@ public class BulletinProtocol {
                 return "ERROR INVALID FORMAT POST REQUIRES COORDINATES, COLOUR, AND MESSAGE";
             }
             
-
             try{
                 
                 int x = Integer.parseInt(tokens[1]);

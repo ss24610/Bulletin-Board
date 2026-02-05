@@ -17,7 +17,6 @@ public class BulletinClientHandler implements Runnable {
 
     @Override
     public void run() {
-        // TODO: Implement client logic
         try {
             process_request();
         }
@@ -68,7 +67,7 @@ public class BulletinClientHandler implements Runnable {
                 if (client_socket != null) client_socket.close();
             }
             catch(IOException e){
-                System.err.println("Error closing connection: " + e.getMessage());
+                System.err.println("ERROR CLOSING CONNECTION: " + e.getMessage());
             }
 
         }

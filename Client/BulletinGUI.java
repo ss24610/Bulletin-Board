@@ -13,9 +13,12 @@ public class BulletinGUI {
     private JTextField commandField;
     private JButton sendButton;
 
-    private Socket socket;
-    private PrintWriter out;
-    private BufferedReader in;
+
+
+    private BulletinClient client;
+
+    private static final String DEFAULT_HOST = "localhost";
+    private static final int DEFAULT_PORT = 4444;
 
     public BulletinGUI() {
         buildGUI();
@@ -71,86 +74,95 @@ public class BulletinGUI {
     }
 
     private void connect() {
+
         try {
-            String host = hostField.getText().trim();
+
             int port = Integer.parseInt(portField.getText().trim());
+            String host = hostField.getText().trim();
 
-            socket = new Socket(host, port);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            client = new BulletinClient(host, port);
+            String initialMessage = client.get_initial_message();
 
-            // Read initial server message (board + note dimensions + colors)
-            String initMessage = in.readLine();
             outputArea.append("CONNECTED\n");
-            outputArea.append(initMessage + "\n\n");
+            outputArea.append(initialMessage + "\n\n");
 
             connectButton.setEnabled(false);
             disconnectButton.setEnabled(true);
             sendButton.setEnabled(true);
 
-        } catch (Exception ex) {
-            showError("Unable to connect to server.");
         }
-    }
 
+        catch(Exception e){
+            showError("UNABLE TO CONNECT TO SERVER.");
+        }
+    
+    }
+        
     private void disconnect() {
+
+        outputArea.append("DISCONNECTED\n");
         try {
-            if (out != null) {
-                out.println("DISCONNECT");
+            if (client != null) {
+                client.disconnect();
+                
             }
         } catch (Exception ignored) {}
-
+    
         cleanup();
-        outputArea.append("DISCONNECTED\n");
-
-        connectButton.setEnabled(true);
-        disconnectButton.setEnabled(false);
-        sendButton.setEnabled(false);
+        
     }
 
-    private void sendCommand() {
-        String command = commandField.getText().trim();
+    private void sendCommand(String command){
         if (command.isEmpty()) return;
 
-        try {
-            out.println(command);
-
-            String response = in.readLine();
-            if (response == null) {
-                showError("Server closed connection.");
-                cleanup();
-                return;
-            }
+        try{
+            String response = client.send_request(command);
 
             outputArea.append(">> " + command + "\n");
             outputArea.append(response + "\n");
-
-            // Handle multi-line OK responses (OK <n>)
-            if (response.startsWith("OK ")) {
-                String[] parts = response.split(" ");
-                if (parts.length == 2) {
-                    int lines = Integer.parseInt(parts[1]);
-                    for (int i = 0; i < lines; i++) {
-                        outputArea.append(in.readLine() + "\n");
-                    }
-                }
-            }
-
-            outputArea.append("\n");
             commandField.setText("");
+        }
 
-        } catch (IOException e) {
-            showError("Connection error.");
+        catch (IOException e) {
+            showError("CONNECTION ERROR.");
             cleanup();
         }
+
+        catch(Exception e){
+            showError("ERROR SENDING COMMAND.");
+        }
+
+    }
+
+    private void sendCommand(){
+        String command = commandField.getText().trim();
+        if (command.isEmpty()) return;
+
+        try{
+            String response = client.send_request(command);
+
+            outputArea.append(">> " + command + "\n");
+            outputArea.append(response + "\n");
+            commandField.setText("");
+        }
+
+        catch (IOException e) {
+            showError("CONNECTION ERROR.");
+            cleanup();
+        }
+
+        catch(Exception e){
+            showError("ERROR SENDING COMMAND.");
+        }
+
     }
 
     private void cleanup() {
-        try {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (socket != null) socket.close();
-        } catch (IOException ignored) {}
+        client = null;
+        connectButton.setEnabled(true);
+        disconnectButton.setEnabled(false);
+        sendButton.setEnabled(false);
+        
     }
 
     private void showError(String msg) {
