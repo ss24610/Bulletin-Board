@@ -110,6 +110,10 @@ public final class BulletinBoardServer {
 
     public synchronized String shake() {
 
+        if(notes.size()==0){
+            return "ERROR NO NOTES EXIST";
+        }
+
         ArrayList<BulletinNote> unpinned_notes = new ArrayList<>();
 
 
@@ -126,6 +130,11 @@ public final class BulletinBoardServer {
     }
 
     public synchronized String clear() {
+
+        if(notes.size()==0){
+            return "ERROR NO NOTES EXIST";
+        }
+        
         notes.clear();
 
         return "OK NOTES CLEARED";
