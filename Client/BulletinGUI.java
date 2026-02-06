@@ -1,6 +1,5 @@
 import java.awt.*;
 import java.io.*;
-import java.net.*;
 import javax.swing.*;
 
 public class BulletinGUI {
@@ -13,12 +12,7 @@ public class BulletinGUI {
     private JTextField commandField;
     private JButton sendButton;
 
-
-
     private BulletinClient client;
-
-    private static final String DEFAULT_HOST = "localhost";
-    private static final int DEFAULT_PORT = 4444;
 
     public BulletinGUI() {
         buildGUI();
@@ -32,8 +26,8 @@ public class BulletinGUI {
         // === Connection Panel ===
         JPanel topPanel = new JPanel(new FlowLayout());
 
-        hostField = new JTextField("localhost", 10);
-        portField = new JTextField("4444", 5);
+        hostField = new JTextField("Host Name", 10);
+        portField = new JTextField("Port Number", 10);
 
         connectButton = new JButton("Connect");
         disconnectButton = new JButton("Disconnect");
@@ -91,7 +85,7 @@ public class BulletinGUI {
             client = new BulletinClient(host, port);
             String initialMessage = client.get_initial_message();
 
-            outputArea.append("CONNECTED\n");
+            outputArea.append(">> CONNECTED\n");
             outputArea.append(initialMessage + "\n\n");
 
             connectButton.setEnabled(false);
@@ -103,14 +97,14 @@ public class BulletinGUI {
         }
 
         catch(Exception e){
-            showError("UNABLE TO CONNECT TO SERVER.");
+            showError("ERROR UNABLE TO CONNECT TO SERVER.");
         }
     
     }
         
     private void disconnect() {
 
-        outputArea.append("DISCONNECTED\n");
+        outputArea.append(">> DISCONNECTED\n\n");
         try {
             if (client != null) {
                 client.disconnect();
@@ -169,6 +163,8 @@ public class BulletinGUI {
 
     private void cleanup() {
         client = null;
+        hostField.setText("Host Name");
+        portField.setText("Port Number");
         connectButton.setEnabled(true);
         disconnectButton.setEnabled(false);
         shakeButton.setEnabled(false);

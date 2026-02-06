@@ -1,11 +1,9 @@
-
 import java.net.*;
 import java.util.*;
 import java.io.*;
 
 public final class BulletinBoardServer {
 
-    private final int server_port;
     private final int board_width;
     private final int board_height;
     private final int note_height;
@@ -13,8 +11,7 @@ public final class BulletinBoardServer {
     private final ArrayList<String> colours;
     private ArrayList<BulletinNote> notes = new ArrayList<BulletinNote>();
 
-    public BulletinBoardServer (int server_port, int board_width, int board_height, int note_height, int note_width, ArrayList<String> colours) {
-        this.server_port = server_port;
+    public BulletinBoardServer (int board_width, int board_height, int note_height, int note_width, ArrayList<String> colours) {
         this.board_width = board_width;
         this.board_height = board_height;
         this.note_height = note_height;
@@ -57,7 +54,7 @@ public final class BulletinBoardServer {
             int note_x = note_dimensions[0];
             int note_y = note_dimensions[1];
 
-            boolean valid_pin = (x >= note_x && x < note_x+note_width) && (y >= note_y && y <= note_y+note_height);
+            boolean valid_pin = (x >= note_x && x <= note_x+note_width) && (y >= note_y && y <= note_y+note_height);
 
             if (valid_pin) {
                 affected_notes.add(note);
@@ -233,8 +230,9 @@ public final class BulletinBoardServer {
         String s = "";
         System.err.println("Usage: <port> <board_width> <board_height> <note_width> <note_height> <color1> ... <colorN>");
 
-        s += this.board_width + " " + this.board_height + " " + this.note_width + " " + this.note_height;
+        s += "SERVER: Board Width: " + this.board_width + " Board Height: " + this.board_height + " Note Width: " + this.note_width + " Note Height: " + this.note_height;
 
+        s += " Colours: ";
         for(String colour: this.colours) {
             s += " " + colour;
         }
@@ -299,7 +297,7 @@ public final class BulletinBoardServer {
             colours.add(args[i].toLowerCase());
         }
 
-        BulletinBoardServer server = new BulletinBoardServer(server_port, board_width, board_height, note_height, note_width, colours);
+        BulletinBoardServer server = new BulletinBoardServer(board_width, board_height, note_height, note_width, colours);
         ServerSocket server_socket = null;
         try {
 
