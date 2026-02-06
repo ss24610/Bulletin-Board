@@ -4,6 +4,7 @@ import java.net.*;
 
 public class BulletinClientHandler implements Runnable {
 
+    // a BulletinClientHandler object is created by a BulletinBoardServer for each successful Client request.
     private Socket client_socket = null;
     private String client_IP = null;
     private BulletinBoardServer bulletin_server = null;
@@ -15,6 +16,7 @@ public class BulletinClientHandler implements Runnable {
     }
 
 
+    // Method is invoked on thread start.
     @Override
     public void run() {
         try {
@@ -26,6 +28,10 @@ public class BulletinClientHandler implements Runnable {
 
     }
 
+    /*
+    The process_request listens to Client requests. Each request is sent to the BulletinProtocol which
+    validates the request and calls the respective Server method and response or error message.
+    */ 
     public void process_request() {
 
         PrintWriter out = null;
@@ -45,6 +51,7 @@ public class BulletinClientHandler implements Runnable {
                 
                 String response = protocol.handle_request(request_line, bulletin_server);
 
+                // the response relayed from the Server is written back to the Client socket
                 out.println(response);
 
                 if(response.equals("DISCONNECT")) {
@@ -56,11 +63,12 @@ public class BulletinClientHandler implements Runnable {
         }
         
         catch(IOException e) {
+            // Handle I/O exceptions (connection refused, socket creation failed, etc.)
             System.err.println("ERROR: " + e.getMessage());
         }
 
         finally {
-
+            // Attempts to close BulletinClientHandler message streams and socket.
             try {
                 if (out != null) out.close();
                 if (in != null) in.close();

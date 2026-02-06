@@ -1,5 +1,12 @@
 public class BulletinProtocol {
 
+    /* 
+    the handle_request method contains the main logic for the BulletinProtocol. Each client request
+    if validated through a sequence of conditional logic. If the Client request is valid, the BulletinProtocol
+    calls the respective Server method and returns the Server response. Otherwise, the BulletinProtocol returns
+    an error message informing the Client what went wrong.
+    */
+
     public String handle_request(String request_line, BulletinBoardServer server) {
         
 
@@ -9,6 +16,7 @@ public class BulletinProtocol {
 
         String[] tokens = request_line.split(" ");
 
+        // Client submitted a POST request
         if (tokens[0].equalsIgnoreCase("post")){
 
             if(tokens.length < 5){
@@ -20,6 +28,7 @@ public class BulletinProtocol {
                 int x = Integer.parseInt(tokens[1]);
                 int y = Integer.parseInt(tokens[2]);
 
+                // retrieve server data board/note dimension data
                 int[] board_dimensions = server.get_board_dimensions();
                 int board_width = board_dimensions[0];
                 int board_height = board_dimensions[1];
@@ -28,6 +37,7 @@ public class BulletinProtocol {
                 int note_width = note_dimensions[0];
                 int note_height = note_dimensions[1];
 
+                // We first determine whether the coordinates of the note are valid and within the board dimensions.
                 if(y < 0 || x < 0) {
                     return "ERROR INVALID FORMAT NOTE COORDINATES MUST BE POSITIVE";
     
@@ -39,8 +49,9 @@ public class BulletinProtocol {
                 
                 String color = tokens[3];
 
+                // Validate if the colour is supported by the server.
                 if(!server.get_colours().contains(color)){
-                    return "ERROR COLOUR NOT SUPPORTED " + color + " IS NOT A VALID COLOR";
+                    return "ERROR COLOUR NOT SUPPORTED " + color + " IS NOT A VALID COLOUR";
                 }
 
                 String content = request_line.substring(request_line.indexOf(color) + color.length() + 1);
@@ -54,7 +65,6 @@ public class BulletinProtocol {
 
         }
 
-
         else if (tokens[0].equalsIgnoreCase("get")) {
 
             if (tokens.length > 1 && tokens[1].equalsIgnoreCase("pins")){
@@ -63,15 +73,16 @@ public class BulletinProtocol {
 
             else{
 
+                // Sentinel values, if a Client get message does not include certain filters, 
+                // these sentinel values will be used by the Server to indicate ALL
                 String color = "ALL";
                 String refers_to = "ALL";
                 int contains_x = -1;
                 int contains_y = -1;
 
-                //color=<color> contains=<x> <y> refersTo=<substring>
                 try{
 
-                
+                    // We iterate over every token to determine the filter being used
                     for(int i = 1; i < tokens.length; i++){
 
                         if(tokens[i].startsWith("color=")){
@@ -84,12 +95,16 @@ public class BulletinProtocol {
                             i++;
 
                         }
+
+                        // refersTo is inferred to be the last filter of the POST request (specified in RFC),
+                        // it retrieves the entire substring to search for using indexing
                         else if(tokens[i].startsWith("refersTo=")){
                             refers_to = request_line.substring(request_line.indexOf("refersTo=") + 9);
                         }
 
                     }
 
+                    // the get_notes() method is called to retrieve Notes with the specified filters.
                     return server.get_notes(color, contains_x, contains_y, refers_to);
                 }
 
@@ -101,6 +116,7 @@ public class BulletinProtocol {
             
         }
 
+        // Shake and Clear requests just invoke the server method.
         else if (tokens[0].equalsIgnoreCase("shake")) {
             return server.shake();
         }
@@ -108,6 +124,7 @@ public class BulletinProtocol {
         else if (tokens[0].equalsIgnoreCase("clear")) {
             return server.clear();
         }
+
 
         else if  (tokens[0].equalsIgnoreCase("pin")) {
 
@@ -118,6 +135,8 @@ public class BulletinProtocol {
             int x;
             int y;
 
+            // We determine if the pin coordinates are valid (positive) integers and whether they
+            // are within the dimensions of the board
             try {
                 x=Integer.parseInt(tokens[1]);
                 y=Integer.parseInt(tokens[2]);
@@ -135,6 +154,7 @@ public class BulletinProtocol {
                     return "ERROR PIN OUT OF BOUNDS";
                 }
 
+                // Invoke the respective server method with the validated coordinates.
                 return server.place_pin(x,y);
 
             }
@@ -155,6 +175,8 @@ public class BulletinProtocol {
             int x;
             int y;
 
+            // We determine if the pin coordinates are valid (positive) integers and whether they
+            // are within the dimensions of the board
             try {
                 x=Integer.parseInt(tokens[1]);
                 y=Integer.parseInt(tokens[2]);
@@ -172,6 +194,7 @@ public class BulletinProtocol {
                     return "ERROR UNPIN OUT OF BOUNDS";
                 }
 
+                // Invoke the respective server method with the validated coordinates.
                 return server.remove_pin(x,y);
 
             }
@@ -183,13 +206,11 @@ public class BulletinProtocol {
 
         }
 
+        // If the request method does not match any of the above, it is invalid.
         else{
             return "INVALID REQUEST METHOD DOES NOT EXIST";
         }
 
-        
     }
-
-
 
 }

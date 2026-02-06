@@ -4,6 +4,11 @@ import java.io.*;
 
 public final class BulletinBoardServer {
 
+    /*
+    BulletinBoard configuration data is select by a user during Server startup.
+    The notes array contains the bulletin board 'state', all of the BulletinNotes currently
+    managed by the Server.
+    */
     private final int board_width;
     private final int board_height;
     private final int note_height;
@@ -20,6 +25,11 @@ public final class BulletinBoardServer {
     }
     
 
+    /*
+    Upon successful validation from the BulletinProtocol, the post_note() method is invoked. The method 
+    validates against complete overlap between TWO notes (occupying the same rectangular region). Upon 
+    validation, a BulletinNote object is created using Client specified data and added the the notes array. 
+    */
     public synchronized String post_note(String note_content, String note_color, int note_x, int note_y) {
 
         for(BulletinNote note: notes){
@@ -42,12 +52,17 @@ public final class BulletinBoardServer {
 
     }
 
-
+    /*
+    Upon successful validation from the BulletinProtocol, the place_pin() method is invoked.
+    First all potential notes where a pin can be placed are determined, from each of these notes we
+    determine if any contain a pin with the same coordiantes (duplicate pin). If all checks are passed,
+    the Pin is placed on all respective notes. 
+    */
     public synchronized String place_pin(int x, int y) {
 
         BulletinPin new_pin = new BulletinPin(x,y);
 
-        //iterate over notes to determine which notes can contain the Pin
+        // iterate over notes to determine which Notes contain the coordinate of the pin
         ArrayList<BulletinNote> affected_notes = new ArrayList<>();
         for (BulletinNote note : notes) {
             int[] note_dimensions = note.get_note_position();
@@ -61,13 +76,15 @@ public final class BulletinBoardServer {
             }
         }
 
-        // if no note are affected, the pin missed therefore error
+        // if no note are affected, the pin missed therefore a pin miss error message 
+        // is relayed to the Client
         if(affected_notes.size() ==0){
             return "ERROR PIN MISS NO NOTE WITHIN GIVEN COORDINATES";
         }
 
         // for all the affected notes, check to see if any note already has that pin
-        // duplicate pin error
+        // if any note already contains a pin on that coordinate, it triggers a
+        // duplicate pin error and the pin is not placed.
         for (BulletinNote note: affected_notes){
             if(note.contains_pin(new_pin)){
                 return "ERROR PIN ALREADY EXISTS";
@@ -83,6 +100,11 @@ public final class BulletinBoardServer {
 
     }
 
+    /*
+    Upon successful validation from the BulletinProtocol, the remove_pin() method is invoked.
+    We iterate over all the BulletinNotes managed by the Server. If any contain a BulletinPin
+    at the specified coordiantes, it is removed from the BulletinNote.
+    */
     public synchronized String remove_pin(int x, int y) {
 
         boolean pin_missed = true;
@@ -104,7 +126,11 @@ public final class BulletinBoardServer {
 
     }
 
-
+    /*
+    Upon successful validation from the BulletinProtocol, the shake() method is invoked.
+    We iterate over all the BulletinNotes managed by the Server. Any BulletinNotes that aren't
+    pinned are placed in an array. These notes are then removed from the Server's notes array.
+    */
     public synchronized String shake() {
 
         if(notes.size()==0){
@@ -126,6 +152,10 @@ public final class BulletinBoardServer {
 
     }
 
+    /*
+    Upon successful validation from the BulletinProtocol, the clear() method is invoked.
+    All of the notes managed by the server are removed.
+    */
     public synchronized String clear() {
 
         if(notes.size()==0){
@@ -137,9 +167,14 @@ public final class BulletinBoardServer {
         return "OK NOTES CLEARED";
     }
 
-
+    /*
+    Upon successful validation from the BulletinProtocol, the get_notes() method is invoked. If
+    no notes are managed by the Server or no notes managed by the Server match the Clients filters, 
+    an error message is relayed to the Client. We iterate over the notes managed by the Server and
+    compare them agains the Client filters. A string representation of all notes that match the
+    Clients filters are returned to the Client.
+    */
     public synchronized String get_notes(String colour, int contains_x, int contains_y, String refers_to) {
-        //color=<color> contains=<x> <y> refersTo=<substring>
 
         if(notes.size() == 0){
             return "ERROR NO NOTES EXIST";
@@ -154,6 +189,8 @@ public final class BulletinBoardServer {
         
                 int[] note_base = note.get_note_position();
 
+                // We compare each note to the clients filters or sentinel value (if the filter
+                // was not specified)
                 boolean colour_filter = (note.get_note_colour().equals(colour) || colour.equals("ALL"));
                 boolean dimension_filter = ((contains_x >= note_base[0] && contains_x < note_base[0]+note_width &&
                                             contains_y >= note_base[1] && contains_y < note_base[1]+note_height)
@@ -181,6 +218,11 @@ public final class BulletinBoardServer {
 
     }
 
+    /*
+    Upon successful validation from the BulletinProtocol, the get_pins() method is invoked. If
+    no notes are managed by the Server or no pins exist, we return an error response to the 
+    Client. Otherwise, a string representation of each pin is relayed to the Client.
+    */
     public synchronized String get_pins() {
 
         if(notes.size()==0){
@@ -212,18 +254,22 @@ public final class BulletinBoardServer {
 
     }
 
+    // Used to retrieve the dimensions of the board, used within the BulletinProtocol.
     public synchronized int[] get_board_dimensions(){
         return new int[] {board_width, board_height}; 
     }
 
+    // Used to retrieve the dimensions of notes, used within the BulletinProtocol.
     public synchronized int[] get_note_dimensions(){
         return new int[] {note_width, note_height}; 
     }
 
+    // Used to retrieve the list of valid colours, used within the BulletinProtocol.
     public synchronized ArrayList<String> get_colours() {
         return colours;
     }
 
+    // Used to relay an initial message to the client, specifing Bulletin Board configuration data.
     public synchronized String get_initial_message() {
 
         
@@ -240,12 +286,13 @@ public final class BulletinBoardServer {
         return s;
     }
 
+    // Main Server loop
     public static void main(String[] args) throws Exception {
 
-        /* should we use a default port instead of terminating on invalid port? */
+        /* The Server requires at least 6 initialization parameters:
+        <port> <board_width> <board_height> <note_width> <note_height> <color1>.... */
         if (args.length < 6) {
 
-            
             System.err.println("ERROR INSUFFICIENT ARGUMENTS");
             System.err.println("Usage: <port> <board_width> <board_height> <note_width> <note_height> <color1> ... <colorN>");
             System.err.println("Example: 4444 10 10 2 2 blue");
@@ -260,6 +307,7 @@ public final class BulletinBoardServer {
         int note_width = 0;
         ArrayList<String> colours = new ArrayList<String>();
 
+        // Ensures that a valid integer port number was supplied, otherwise terminates Server. 
         try {
             
             server_port = Integer.parseInt(args[0]);
@@ -276,6 +324,7 @@ public final class BulletinBoardServer {
             System.exit(1);
         }
 
+        // Ensures that a valid integer for board/note dimensions was supplied, otherwise terminates Server.
         try {
             board_width = Integer.parseInt(args[1]);
             board_height = Integer.parseInt(args[2]);
@@ -283,13 +332,13 @@ public final class BulletinBoardServer {
             note_height = Integer.parseInt(args[4]);
 
             if(board_height < 0 || board_width < 0 || note_height < 0 || note_width < 0) {
-                System.err.println("Error: Board/note dimensions must be positive integers");
+                System.err.println("ERROR BOARD/NOTE DIMENSIONS MUST BE POSITIVE INTEGERS");
                 System.exit(1);
 
             }
 
         } catch (NumberFormatException e) {
-            System.err.println("Board and note dimensions must be positive integers");
+            System.err.println("ERROR BOARD/NOTE DIMENSIONS MUST BE POSITIVE INTEGERS");
             return;
         }
 
@@ -297,18 +346,21 @@ public final class BulletinBoardServer {
             colours.add(args[i].toLowerCase());
         }
 
+        // Creates a BulletinBoardServer object once all Server configuration data is validated
         BulletinBoardServer server = new BulletinBoardServer(board_width, board_height, note_height, note_width, colours);
         ServerSocket server_socket = null;
         try {
 
             server_socket = new ServerSocket(server_port);
-            System.out.println("BulletinBoardServer started on localhost and port: " + server_port);
+            System.out.println("BulletinBoardServer started on localhost and port number: " + server_port);
             System.out.println("Close server using Ctrl+C");
             System.out.println("---------------------------------------------------");
 
-
             while (true) {
 
+                // Server socket listens for incoming Client requests. 
+                // A BulletinClientHandler is assigned to each Client connection and is designated
+                // to a specific thread.
                 Socket client_socket = server_socket.accept();
 
                 String client_ip = client_socket.getInetAddress().getHostAddress();
@@ -324,13 +376,14 @@ public final class BulletinBoardServer {
             }
 
         } catch (BindException e) {
-            System.err.println("Error: " + server_port + " is already in use.");
+            // Handle socket binding exceptions 
+            System.err.println("ERROR SERVER PORT: " + server_port + " IS ALREADY IN USE");
             System.exit(1);
         }
 
         catch (IOException e) {
             // Handle I/O exceptions (connection refused, socket creation failed, etc.)
-            System.err.println("Error: unable to create server socket on port " + server_port);
+            System.err.println("ERROR UNABLE TO CREATE SERVER SOCKET ON PORT: " + server_port);
             System.exit(1);
         }
 
