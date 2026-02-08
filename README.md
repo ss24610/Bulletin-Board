@@ -1,14 +1,13 @@
-# Bulletin-Board
-Hello this is a test
+# HOW TO
 
-#TO-DO
-- record demo
-- make a proper read me?
+Set up the Server
+- Navigate to the Server directory
+- Compile with javac *.java
+- Run BulletinBoardServer program with specified board configuration details
+- Example: java BulletinBoardServer port board_width board_height note_width note_height colour1....colourN
 
-- protocol methods:
-POST 2 3 white Meeting next Wednesday from 2 to 3 
-PIN 15 12  
-UNPIN 15 12 
-SHAKE 
-GET PINS 
-CLEAR
+Set up the Client
+- Navigate to the Client directory
+- Compile with javac *.java
+- Run the BulletinGUI program 
+- Example: java BulletinGUI

@@ -18,6 +18,7 @@ public class BulletinGUI {
         buildGUI();
     }
 
+    // Creates a JFrame GUI and attaches buttons and text fields for Client interaction
     private void buildGUI() {
         frame = new JFrame("Bulletin Board Client");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -75,6 +76,9 @@ public class BulletinGUI {
         frame.setVisible(true);
     }
 
+    // Once client attempts to connect, a BulletinClient will be initialized 
+    // with the Client specified hostname and port number. On successful connection,
+    // the Server welcome message will be displayed in the display area.
     private void connect() {
 
         try {
@@ -102,6 +106,7 @@ public class BulletinGUI {
     
     }
         
+    // Disconnects and cleans up the BulletinClient and BulletinGUI
     private void disconnect() {
 
         outputArea.append(">> DISCONNECTED\n\n");
@@ -116,6 +121,8 @@ public class BulletinGUI {
         
     }
 
+    // Send command that contains a String argument, used to send direct
+    // Client requests through buttons (shake, clear)
     private void sendCommand(String command){
         if (command.isEmpty()) return;
 
@@ -138,6 +145,8 @@ public class BulletinGUI {
 
     }
 
+    // Overloaded Send command reads the Client request from the input box
+    // and sends the message through the BulletinClient
     private void sendCommand(){
         String command = commandField.getText().trim();
         if (command.isEmpty()) return;
@@ -161,6 +170,8 @@ public class BulletinGUI {
 
     }
 
+    // The cleanup method returns the GUI to its original configuration and
+    // allows a Client to reconnect or safely close the application
     private void cleanup() {
         client = null;
         hostField.setText("Host Name");
